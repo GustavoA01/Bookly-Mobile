@@ -9,7 +9,7 @@ import { ActivityIndicator, Modal, Portal, Text } from "react-native-paper"
 import { useLists } from "../hook/useLists"
 import { FormProvider } from "react-hook-form"
 import { AddListFormType } from "@/data/schemas"
-import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 export const LibraryContent = () => {
   const {
@@ -29,10 +29,9 @@ export const LibraryContent = () => {
     isCreatingListLoading,
     isEditing,
     onCloseBottomSheet,
-    confirmDeleteList,
     onDeleteList,
-    deleteModalVisible,
-    hideDeleteModal,
+    modalMessages,
+    setModalMessages,
   } = useLists()
 
   const onSubmit = (data: AddListFormType) => {
@@ -99,10 +98,19 @@ export const LibraryContent = () => {
       </Portal>
 
       <Portal>
-        <ConfirmDeleteModal
-          deleteModalVisible={deleteModalVisible}
-          hideDeleteModal={hideDeleteModal}
-          confirmDeleteList={confirmDeleteList}
+        <ConfirmModal
+          visible={modalMessages !== null}
+          hideModal={() => setModalMessages(null)}
+          title={modalMessages?.title ?? ""}
+          description={
+            modalMessages?.description ?? "Deseja realmente deletar esta lista?"
+          }
+          onConfirm={() => {
+            modalMessages?.onConfirm?.()
+            setModalMessages(null)
+          }}
+          confirmButtonText={modalMessages?.actionText ?? "Ok"}
+          cancelButton
         />
       </Portal>
     </View>

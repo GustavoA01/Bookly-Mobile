@@ -11,6 +11,7 @@ const SignUpScreen = () => {
         <Text variant="displayMedium" style={authStyles.title}>
           Bookly
         </Text>
+        
         <SignUpForm />
       </View>
     </SafeAreaWrapper>

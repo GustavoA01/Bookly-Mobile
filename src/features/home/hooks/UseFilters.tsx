@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, PropsWithChildren } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getBooks } from "@/services/books"
+import { getBooks } from "@/services/firebase/books"
 import { FiltersContextType } from "@/data/types"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
 
 const FiltersContext = createContext<FiltersContextType>(
   {} as FiltersContextType
@@ -16,7 +17,7 @@ export const FiltersProvider = ({ children }: PropsWithChildren) => {
   )
 
   const { data: books, isLoading } = useQuery({
-    queryKey: ["books", selectedFilter, selectedSort],
+    queryKey: [queryKeys.globalBooks, selectedFilter, selectedSort],
     queryFn: () => getBooks(selectedFilter, selectedSort),
   })
 

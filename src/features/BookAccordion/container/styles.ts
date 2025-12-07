@@ -49,12 +49,4 @@ export const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: theme.colors.outline,
   },
-
-  modalContainer: {
-    backgroundColor: theme.colors.surface,
-    padding: 20,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    gap: 24,
-  },
 })

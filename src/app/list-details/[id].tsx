@@ -6,11 +6,12 @@ import { ListAccordion } from "@/components/ListAccordion"
 import { ActivityIndicator, List, Text } from "react-native-paper"
 import { theme } from "@/theme"
 import { useQuery } from "@tanstack/react-query"
-import { getListById } from "@/services/lists"
+import { getListById } from "@/services/firebase/lists"
 import { useRef } from "react"
 import { CustomBottomSheet } from "@/components/ui/CustomBottomSheet"
 import { AddBookSheet } from "@/features/lists/container/AddBookSheet"
-import { getListBooks } from "@/services/lists/getListBooks"
+import { getListBooks } from "@/services/firebase/lists/getListBooks"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
 
 const ListDetailsScreen = () => {
   const { id } = useLocalSearchParams()
@@ -18,13 +19,13 @@ const ListDetailsScreen = () => {
   const onOpenBottomSheet = () => editListBottomSheetRef.current?.open()
 
   const { data: list, isLoading } = useQuery({
-    queryKey: ["list", id],
+    queryKey: [queryKeys.list, id],
     queryFn: () => getListById(id as string),
     enabled: !!id,
   })
 
   const { data: listBooks, isLoading: isLoadingListBooks } = useQuery({
-    queryKey: ["list-books", id],
+    queryKey: [queryKeys.listBooks, id],
     queryFn: () => getListBooks(id as string),
     enabled: !!id,
   })  

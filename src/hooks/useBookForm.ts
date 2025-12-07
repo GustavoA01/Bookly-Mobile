@@ -3,12 +3,13 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { bookFormSchema, BookFormType } from "@/data/schemas"
 import { statusLabel } from "@/data/constants"
-import { Alert } from "react-native"
-import { BookType } from "@/data/types"
+import { BookType, ModalMessageTypes } from "@/data/types"
 import { Timestamp } from "firebase/firestore"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createBook, updateBook } from "@/services/books"
+import { createBook, updateBook } from "@/services/firebase/books"
 import { router } from "expo-router"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
+import { Alert } from "react-native"
 
 type UpdateBookParams = {
   id: string
@@ -21,6 +22,7 @@ export const useBookForm = ({ source }: { source: "google" | "firebase" }) => {
   const [label, setLabel] = useState<string>(statusLabel[selectedStatus].label)
   const [startDate, setStartDate] = useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
+  const [modalMessages, setModalMessages] = useState<ModalMessageTypes | null>(null)
 
   const methods = useForm<BookFormType>({
     // @ts-ignore
@@ -32,11 +34,11 @@ export const useBookForm = ({ source }: { source: "google" | "firebase" }) => {
     mutationFn: createBook,
     onSuccess: () => {
       Alert.alert("Livro adicionado com sucesso")
-      queryClient.invalidateQueries({ queryKey: ["books"] })
+      queryClient.invalidateQueries({ queryKey: [queryKeys.globalBooks] })
       router.back()
     },
     onError: () => {
-      Alert.alert("Erro ao adicionar livro")
+      Alert.alert("Ocorreu um erro ao adicionar livro")
     }
   })
 
@@ -44,11 +46,11 @@ export const useBookForm = ({ source }: { source: "google" | "firebase" }) => {
     mutationFn: ({ id, book }: UpdateBookParams) => updateBook(id, book),
     onSuccess: () => {
       Alert.alert("Livro atualizado com sucesso")
-      queryClient.invalidateQueries({ queryKey: ["books"] })
+      queryClient.invalidateQueries({ queryKey: [queryKeys.globalBooks] })
       router.back()
     },
     onError: () => {
-      Alert.alert("Erro ao atualizar livro")
+      Alert.alert("Ocorreu um erro ao atualizar livro")
     }
   })
 
@@ -72,7 +74,7 @@ export const useBookForm = ({ source }: { source: "google" | "firebase" }) => {
 
   const onCreateBook = async (data: BookFormType) => {
     if (!dateVerification()) {
-      Alert.alert("Datas inválidas", "A data de término deve ser maior que a data de início")
+      setModalMessages({ title: "Erro", description: "Datas inválidas", actionText: "Ok" })
       return
     }
 
@@ -91,6 +93,11 @@ export const useBookForm = ({ source }: { source: "google" | "firebase" }) => {
   }
 
   const onUpdate = async (id: string, data: BookFormType) => {
+    if (!dateVerification()) {
+      setModalMessages({ title: "Erro", description: "Datas inválidas", actionText: "Ok" })
+      return
+    }
+    
     const newBook: Omit<BookType, "id" | "addedIn" | "userId"> = {
       title: data.title,
       author: data.author ?? '',
@@ -123,5 +130,7 @@ export const useBookForm = ({ source }: { source: "google" | "firebase" }) => {
     handleStartDateChange,
     handleEndDateChange,
     isLoading: isCreatingBookLoading || isUpdatingBookLoading,
+    modalMessages,
+    setModalMessages,
   }
 }

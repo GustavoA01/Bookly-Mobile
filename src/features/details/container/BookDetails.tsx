@@ -1,14 +1,14 @@
 import { styles } from "@/features/details/container/styles"
 import { Image, Linking, View } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
-import { Divider, Text } from "react-native-paper"
+import { Divider, Portal, Text } from "react-native-paper"
 import { DetailsHeader } from "../components/DetailsHeader"
 import { DetailsInfo } from "../components/DetailsInfo"
 import { DetailsFooter } from "../components/DetailsFooter"
-import { ConfirmBuyModal } from "../components/ConfirmBuyModal"
 import { useState } from "react"
 import { GoogleBook } from "@/data/types"
 import { router } from "expo-router"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 export const BookDetails = ({ book }: { book: GoogleBook }) => {
   const [visible, setVisible] = useState(false)
@@ -44,56 +44,67 @@ export const BookDetails = ({ book }: { book: GoogleBook }) => {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.imageContainer}>
-        {book.volumeInfo.imageLinks?.thumbnail ? (
-          <Image
-            source={{ uri: book.volumeInfo.imageLinks.thumbnail }}
-            style={styles.image}
-            resizeMode="contain"
+    <>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.imageContainer}>
+          {book.volumeInfo.imageLinks?.thumbnail ? (
+            <Image
+              source={{ uri: book.volumeInfo.imageLinks.thumbnail }}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={[styles.image, styles.placeholder]}>
+              <Text style={{ color: "white" }}>Imagem não disponível</Text>
+            </View>
+          )}
+        </View>
+
+        <View>
+          <DetailsHeader
+            title={book.volumeInfo.title}
+            author={book.volumeInfo.authors?.[0] ?? ""}
+            averageRating={book.volumeInfo.averageRating ?? 0}
+            ratingsCount={book.volumeInfo.ratingsCount ?? 0}
+            description={cleanHtmlDescription(
+              book.volumeInfo.description ?? ""
+            )}
           />
-        ) : (
-          <View style={[styles.image, styles.placeholder]}>
-            <Text style={{ color: "white" }}>Imagem não disponível</Text>
-          </View>
-        )}
-      </View>
+          <Divider bold style={{ marginVertical: 12 }} />
 
-      <View>
-        <DetailsHeader
-          title={book.volumeInfo.title}
-          author={book.volumeInfo.authors?.[0] ?? ""}
-          averageRating={book.volumeInfo.averageRating ?? 0}
-          ratingsCount={book.volumeInfo.ratingsCount ?? 0}
-          description={cleanHtmlDescription(book.volumeInfo.description ?? "")}
+          <DetailsInfo
+            pages={book.volumeInfo.pageCount ?? 0}
+            categories={book.volumeInfo.categories?.join(", ") || "-"}
+            publisher={book.volumeInfo.publisher ?? "Editora não disponível"}
+            publicationDate={
+              book.volumeInfo.publishedDate ??
+              "Data de publicação não disponível"
+            }
+            language={book.volumeInfo.language ?? "Idioma não disponível"}
+          />
+
+          <DetailsFooter
+            onAddToLibrary={handleAddToLibrary}
+            showModal={showModal}
+            isBookAvailable={book.saleInfo?.saleability === "FOR_SALE"}
+          />
+        </View>
+      </ScrollView>
+
+      <Portal>
+        <ConfirmModal
+          title="Comprar Livro"
+          description="Você será redirecionado para a Google Play Store."
+          onConfirm={handleBuyBook}
+          confirmButtonText="Ok"
+          visible={visible}
+          hideModal={hideModal}
+          cancelButton
         />
-        <Divider bold style={{ marginVertical: 12 }} />
-
-        <DetailsInfo
-          pages={book.volumeInfo.pageCount ?? 0}
-          categories={book.volumeInfo.categories?.join(", ") || "-"}
-          publisher={book.volumeInfo.publisher ?? "Editora não disponível"}
-          publicationDate={
-            book.volumeInfo.publishedDate ?? "Data de publicação não disponível"
-          }
-          language={book.volumeInfo.language ?? "Idioma não disponível"}
-        />
-
-        <DetailsFooter
-          onAddToLibrary={handleAddToLibrary}
-          showModal={showModal}
-          isBookAvailable={book.saleInfo?.saleability === "FOR_SALE"}
-        />
-      </View>
-
-      <ConfirmBuyModal
-        visible={visible}
-        hideModal={hideModal}
-        onBuyBook={handleBuyBook}
-      />
-    </ScrollView>
+      </Portal>
+    </>
   )
 }

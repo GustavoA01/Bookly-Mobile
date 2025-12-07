@@ -3,6 +3,7 @@ import { createContext, useState } from "react"
 import { useContext } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { GoogleBooksContextType } from "@/data/types"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
 
 export const GoogleBooksContext = createContext<
   GoogleBooksContextType | undefined
@@ -16,7 +17,7 @@ export const GoogleBooksProvider = ({
   const [query, setQuery] = useState("")
 
   const { data: googleBooks, isLoading: isLoadingGoogleBooks } = useQuery({
-    queryKey: ["google-books", query],
+    queryKey: [queryKeys.googleBooks, query],
     queryFn: () => getGoogleBooks(query),
   })
 

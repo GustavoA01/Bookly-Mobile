@@ -22,6 +22,13 @@ export interface ListType {
   userId: string
 }
 
+export type ModalMessageTypes = {
+  title: string
+  description: string
+  actionText: string
+  onConfirm?: () => void
+}
+
 export type GoogleBooksContextType = {
   googleBooks: GoogleBook[] | undefined
   setQuery: (query: string) => void

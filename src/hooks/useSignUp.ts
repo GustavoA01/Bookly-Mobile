@@ -2,12 +2,13 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { SignUpFormType, signUpSchema } from "@/data/schemas"
-import { auth } from "@/services/firebaseConfig"
+import { auth } from "@/services/firebase/firebaseConfig"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
 import { router } from "expo-router"
-import { Alert } from "react-native"
+import { ModalMessageTypes } from "@/data/types"
 
 export const useSignUp = () => {
+  const [modalMessages, setModalMessages] = useState<ModalMessageTypes | null>(null)
   const methods = useForm<SignUpFormType>({
     resolver: zodResolver(signUpSchema),
   })
@@ -27,8 +28,12 @@ export const useSignUp = () => {
         router.replace("/(tabs)/main")
       }
     } catch (error) {
-      Alert.alert("Erro ao cadastrar usuário", "Verifique os dados e tente novamente")
-      console.log(error)
+      setModalMessages({
+        title: "Erro ao cadastrar usuário",
+        description: "Verifique os dados e tente novamente",
+        actionText: "Ok"
+      })
+      console.log((error as Error).message)
     }
   }
 
@@ -38,5 +43,7 @@ export const useSignUp = () => {
     secureTextEntry,
     setSecureTextEntry,
     onSubmit,
+    modalMessages,
+    setModalMessages,
   }
 }

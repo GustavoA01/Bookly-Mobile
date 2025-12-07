@@ -7,13 +7,16 @@ import { FormFooter } from "@/features/form/components/FormFooter"
 import { router } from "expo-router"
 import { useBookForm } from "@/hooks/useBookForm"
 import { Form } from "@/features/form/container/Form"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { getGoogleBookById } from "@/api/getGoogleBooks"
 import { useEffect } from "react"
-import { getBookById } from "@/services/books"
+import { getBookById } from "@/services/firebase/books"
 import { statusLabel } from "@/data/constants"
 import { BookType, GoogleBook } from "@/data/types"
 import { BookFormType } from "@/data/schemas"
+import { Portal } from "react-native-paper"
+import { ConfirmModal } from "@/components/ConfirmModal"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
 
 const BookFormScreen = () => {
   const { id, source } = useLocalSearchParams()
@@ -36,12 +39,15 @@ const BookFormScreen = () => {
     onUpdate,
     reset,
     isLoading,
+    modalMessages,
+    setModalMessages,
   } = useBookForm({ source: source as "google" | "firebase" })
 
   const { data: bookData } = useQuery<GoogleBook | BookType | null>({
-    queryKey: ["book-data", id, source],
+    queryKey: [queryKeys.bookFromGoogleOrFirebase, id, source],
     queryFn: () => {
       if (!id) return null
+
       if (source === "google") {
         return getGoogleBookById(id as string)
       } else if (source === "firebase") {
@@ -114,6 +120,18 @@ const BookFormScreen = () => {
         isValid={isValid}
         isLoading={isLoading}
       />
+
+      <Portal>
+        <ConfirmModal
+          visible={modalMessages !== null}
+          hideModal={() => setModalMessages(null)}
+          description={modalMessages?.description ?? ""}
+          title={modalMessages?.title ?? ""}
+          onConfirm={() => setModalMessages(null)}
+          confirmButtonText={modalMessages?.actionText ?? "Ok"}
+          cancelButton
+        />
+      </Portal>
     </SafeAreaWrapper>
   )
 }

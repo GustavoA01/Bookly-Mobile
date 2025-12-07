@@ -6,12 +6,13 @@ import { getGoogleBookById } from "@/api/getGoogleBooks"
 import { useQuery } from "@tanstack/react-query"
 import { GoogleBook } from "@/data/types"
 import { ActivityIndicator } from "react-native-paper"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
 
 const DetailsScreen = () => {
   const { id } = useLocalSearchParams()
 
   const { data: googleBook, isLoading } = useQuery({
-    queryKey: ["google-book", id],
+    queryKey: [queryKeys.googleBook, id],
     queryFn: () => getGoogleBookById(id as string),
     enabled: !!id,
   })

@@ -1,5 +1,5 @@
 import { useLists } from "@/features/lists/hook/useLists"
-import { getBooks } from "@/services/books"
+import { getBooks } from "@/services/firebase/books"
 import { theme } from "@/theme"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { TouchableOpacity, View } from "react-native"

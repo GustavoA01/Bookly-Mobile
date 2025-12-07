@@ -6,9 +6,9 @@ import { BookInfo } from "../components/BookInfo"
 import { RightAccordion } from "../components/RightAccordion"
 import { BookEditOptions } from "../components/BookEditOptions"
 import { BookType } from "@/data/types"
-import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal"
 import { useBookAccordion } from "../hook/useBookAccordion"
 import { AddToListSheet } from "./AddToListSheet"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 export const BookAccordion = ({
   id,
@@ -34,7 +34,10 @@ export const BookAccordion = ({
     handleRemoveFromList,
     bottomSheetRef,
     listBottomSheet,
+    modalMessages,
   } = useBookAccordion()
+
+
 
   return (
     <View>
@@ -75,10 +78,17 @@ export const BookAccordion = ({
       </CustomBottomSheet>
 
       <Portal>
-        <ConfirmDeleteModal
+        <ConfirmModal
+          title={modalMessages?.title ?? ""}
+          description={
+            modalMessages?.description ??
+            "Deseja realmente deletar este livro? Ele também será excluído de qualquer lista que esteja presente."
+          }
+          onConfirm={() => handelDeleteBook(id)}
           visible={visible}
           hideModal={hideModal}
-          handelDeleteBook={() => handelDeleteBook(id)}
+          confirmButtonText={modalMessages?.actionText ?? "Ok"}
+          cancelButton={true}
         />
       </Portal>
 

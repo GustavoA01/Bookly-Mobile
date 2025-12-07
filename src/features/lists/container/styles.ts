@@ -33,12 +33,4 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16
   },
-
-  deleteModalContainer: {
-    backgroundColor: theme.colors.surface,
-    padding: 20,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    gap: 24
-  },
 });

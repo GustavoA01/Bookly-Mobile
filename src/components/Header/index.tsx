@@ -1,12 +1,12 @@
 import { View } from "react-native"
 import { styles } from "./styles"
-import { Button, IconButton, Menu, Text, Portal } from "react-native-paper"
+import { Button, IconButton, Text, Portal } from "react-native-paper"
 import { theme } from "../../theme"
 import { router, usePathname } from "expo-router"
 import { useRef, useState } from "react"
 import { CustomBottomSheet } from "../ui/CustomBottomSheet"
 import { getAuth, signOut } from "firebase/auth"
-import { ConfirmLogout } from "./ConfirmLogout"
+import { ConfirmModal } from "../ConfirmModal"
 
 const pathsTitle = {
   "/main": "Meus Livros",
@@ -53,11 +53,13 @@ export const Header = () => {
           onPress={onOpenBottomSheet}
         />
       </View>
+
       <CustomBottomSheet bottomSheetRef={bottomSheetRef} height={200}>
         <View style={styles.settingsContainer}>
           <Text variant="headlineSmall" style={styles.settingsTitle}>
             Configurações da conta
           </Text>
+          
           <Button
             textColor={theme.colors.error}
             mode="outlined"
@@ -69,10 +71,14 @@ export const Header = () => {
       </CustomBottomSheet>
 
       <Portal>
-        <ConfirmLogout
+        <ConfirmModal
           visible={visible}
           hideModal={hideModal}
-          doLogout={doLogout}
+          title="Sair da conta"
+          description="Deseja realmente sair? Você será redirecionado para a página de login."
+          onConfirm={doLogout}
+          confirmButtonText="Sair"
+          cancelButton
         />
       </Portal>
     </View>

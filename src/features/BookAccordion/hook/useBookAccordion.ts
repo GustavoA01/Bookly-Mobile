@@ -1,10 +1,11 @@
 import { useRef, useState } from "react"
 import { usePathname } from "expo-router"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { deleteBook } from "@/services/books"
-import { Alert } from "react-native"
+import { deleteBook } from "@/services/firebase/books"
 import { router } from "expo-router"
 import { useLists } from "@/features/lists/hook/useLists"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
+import { ModalMessageTypes } from "@/data/types"
 
 export const useBookAccordion = () => {
   const queryClient = useQueryClient()
@@ -14,6 +15,7 @@ export const useBookAccordion = () => {
   const onOpenBottomSheet = () => bottomSheetRef.current?.open()
   const pathname = usePathname()
   const isListPathName = pathname.includes("/list-details")
+  const [modalMessages, setModalMessages] = useState<ModalMessageTypes | null>(null)
 
   const [visible, setVisible] = useState(false)
 
@@ -23,9 +25,14 @@ export const useBookAccordion = () => {
   const { mutateAsync: deleteBookFn } = useMutation({
     mutationFn: deleteBook,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["books"] })
-      Alert.alert("Livro deletado com sucesso")
+      queryClient.invalidateQueries({ queryKey: [queryKeys.globalBooks] })
+      setTimeout(() => {
+        setModalMessages({ title: "", description: "Livro deletado com sucesso", actionText: "Ok" })
+      }, 500)
     },
+    onError: () => {
+      setModalMessages({ title: "Erro", description: "Erro ao deletar livro", actionText: "Ok" })
+    }
   })
 
   const handleEdit = (id: string) => {
@@ -54,8 +61,8 @@ export const useBookAccordion = () => {
     deleteBookFn(id).then(() => {
       if (isListPathName) {
         handleRemoveFromList(id)
-        queryClient.invalidateQueries({ queryKey: ["lists"] })
-        queryClient.invalidateQueries({ queryKey: ["list-books"] })
+        queryClient.invalidateQueries({ queryKey: [queryKeys.lists] })
+        queryClient.invalidateQueries({ queryKey: [queryKeys.listBooks] })
       }
     })
   }
@@ -65,7 +72,7 @@ export const useBookAccordion = () => {
     if (list) {
       const newList = { ...list, books: list?.books.filter((book) => book !== id) }
       updateListFn({ id: list.id, list: newList })
-      queryClient.invalidateQueries({ queryKey: ["list-books", list.id] })
+      queryClient.invalidateQueries({ queryKey: [queryKeys.listBooks, list.id] })
       bottomSheetRef.current?.close()
     }
   }
@@ -84,5 +91,7 @@ export const useBookAccordion = () => {
     handleRemoveFromList,
     bottomSheetRef,
     listBottomSheet,
+    modalMessages,
+    setModalMessages,
   }
 }

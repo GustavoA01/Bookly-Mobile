@@ -9,6 +9,7 @@ export const AddToListSheet = ({ bookId }: { bookId: string }) => {
 
   const handleAddToList = (listId: string) => {
     const list = lists?.find((list) => list.id === listId)
+    
     if (list) {
       const newList = { ...list, books: [...list?.books, bookId] }
       updateListFn({ id: listId, list: newList })

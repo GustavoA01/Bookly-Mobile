@@ -3,9 +3,10 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AddListFormType, addListSchema } from "@/data/schemas"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createList, deleteList, getListById, getLists, updateList } from "@/services/lists"
+import { createList, deleteList, getListById, getLists, updateList } from "@/services/firebase/lists"
+import { ListType, ModalMessageTypes } from "@/data/types"
+import { queryKeys } from "@/services/queryClientKeys/queryKeys"
 import { Alert } from "react-native"
-import { ListType } from "@/data/types"
 
 type UpdateListParams = { id: string, list: Partial<ListType> }
 
@@ -18,14 +19,18 @@ export const useLists = () => {
   const editListBottomSheetRef = useRef<any>(null)
   const [visible, setVisible] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const showDeleteModal = () => setDeleteModalVisible(true);
-  const hideDeleteModal = () => setDeleteModalVisible(false);
+  const [listTitle, setListTitle] = useState<string>("")
+  const [listId, setListId] = useState<string>("")
+  const [modalMessages, setModalMessages] = useState<ModalMessageTypes | null>(null)
 
   const onDeleteList = () => {
     onCloseBottomSheet()
-    showDeleteModal()
+    setModalMessages({
+      title: "",
+      description: "Deseja realmente deletar esta lista?",
+      actionText: "Ok",
+      onConfirm: confirmDeleteList
+    })
   }
 
   const onOpenAddListModal = async (id?: string) => {
@@ -51,9 +56,6 @@ export const useLists = () => {
     setIsEditing(false)
   }
 
-  const [listTitle, setListTitle] = useState<string>("")
-  const [listId, setListId] = useState<string>("")
-
   const onOpenBottomSheet = (item: { title: string; id: string }) => {
     editListBottomSheetRef.current?.open()
     setListTitle(item.title)
@@ -70,25 +72,25 @@ export const useLists = () => {
   }
 
   const { data: lists, isLoading: isLoadingLists } = useQuery({
-    queryKey: ["lists"],
+    queryKey: [queryKeys.lists],
     queryFn: getLists,
   })
 
   const { mutateAsync: createListFn, isPending: isCreatingListLoading } = useMutation({
     mutationFn: createList,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lists"] })
-      setTimeout(() => {
-        onCloseAddListModal()
-        Alert.alert("Lista criada com sucesso")
-        methods.reset({
-          title: "",
-          listDescription: "",
-        })
-      }, 1000)
+      queryClient.invalidateQueries({ queryKey: [queryKeys.lists] })
+      onCloseAddListModal()
+      setModalMessages({
+        title: "", description: "Lista criada com sucesso", actionText: "Ok"
+      })
+      methods.reset({
+        title: "",
+        listDescription: "",
+      })
     },
     onError: () => {
-      Alert.alert("Erro ao adicionar lista")
+      setModalMessages({ title: "Erro", description: "Erro ao adicionar lista", actionText: "Ok" })
     }
   })
 
@@ -100,11 +102,11 @@ export const useLists = () => {
     }
   }
 
-  const { mutateAsync: updateListFn, isPending: isUpdatingListLoading } = useMutation({
+  const { mutateAsync: updateListFn } = useMutation({
     mutationFn: (updateListParams: UpdateListParams) => updateList(updateListParams.id, updateListParams.list),
     onSuccess: () => {
       setIsEditing(false)
-      queryClient.invalidateQueries({ queryKey: ["lists"] })
+      queryClient.invalidateQueries({ queryKey: [queryKeys.lists] })
       onCloseAddListModal()
       Alert.alert("Lista atualizada com sucesso")
     },
@@ -127,8 +129,7 @@ export const useLists = () => {
   const { mutateAsync: deleteListFn } = useMutation({
     mutationFn: deleteList,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lists"] })
-      hideDeleteModal()
+      queryClient.invalidateQueries({ queryKey: [queryKeys.lists] })
       Alert.alert("Lista deletada com sucesso")
     },
     onError: () => {
@@ -160,8 +161,7 @@ export const useLists = () => {
     updateListFn,
     onDeleteList,
     confirmDeleteList,
-    deleteModalVisible,
-    showDeleteModal,
-    hideDeleteModal,
+    modalMessages,
+    setModalMessages,
   }
 }

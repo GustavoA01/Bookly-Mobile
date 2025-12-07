@@ -7,15 +7,6 @@ export const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  modalContainer: {
-    marginTop: '50%',
-    backgroundColor: theme.colors.surface,
-    padding: 20,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    gap: 24
-  },
-
   imageContainer: {
     alignItems: "center",
     marginVertical: 20,
